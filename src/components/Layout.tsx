@@ -90,6 +90,52 @@ export default function Layout({ onLogout }: { onLogout: () => void }) {
     "Tamil", "Telugu", "Urdu"
   ];
 
+  const languageCodes: Record<string, string> = {
+    "English": "en",
+    "Assamese": "as",
+    "Bengali": "bn",
+    "Bodo": "bho", 
+    "Dogri": "doi",
+    "Gujarati": "gu",
+    "Hindi": "hi",
+    "Kannada": "kn",
+    "Kashmiri": "ks",
+    "Konkani": "gom",
+    "Maithili": "mai",
+    "Malayalam": "ml",
+    "Manipuri": "mni-Mtei",
+    "Marathi": "mr",
+    "Nepali": "ne",
+    "Odia": "or",
+    "Punjabi": "pa",
+    "Sanskrit": "sa",
+    "Santali": "sat",
+    "Sindhi": "sd",
+    "Tamil": "ta",
+    "Telugu": "te",
+    "Urdu": "ur"
+  };
+
+  const handleLanguageSelect = (lang: string) => {
+    setLanguage(lang);
+    
+    // Attempt to trigger Google Translate
+    const gtCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+    if (gtCombo) {
+      gtCombo.value = languageCodes[lang] || 'en';
+      gtCombo.dispatchEvent(new Event('change'));
+    } else {
+      // Fallback if widget hasn't fully loaded yet but they clicked quickly
+      setTimeout(() => {
+        const retryCombo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+        if (retryCombo) {
+          retryCombo.value = languageCodes[lang] || 'en';
+          retryCombo.dispatchEvent(new Event('change'));
+        }
+      }, 500);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col font-sans bg-[#0D0D0D] text-[#F2F2F2] overflow-hidden">
       {/* Header */}
@@ -160,7 +206,7 @@ export default function Layout({ onLogout }: { onLogout: () => void }) {
               {languages.map(lang => (
                 <button
                   key={lang}
-                  onClick={() => setLanguage(lang)}
+                  onClick={() => handleLanguageSelect(lang)}
                   className={cn(
                     "w-full text-left px-4 py-2 text-[10px] uppercase tracking-widest hover:bg-[#1A1A1A] transition-colors",
                     language === lang ? "text-[#A68B5C]" : "text-[#AAAAAA]"
