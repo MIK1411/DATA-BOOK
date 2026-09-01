@@ -3,7 +3,18 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiClient: GoogleGenAI | null = null;
+
+function getAiClient(): GoogleGenAI {
+  if (!aiClient) {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("GEMINI_API_KEY environment variable is required. Please add it to your settings.");
+    }
+    aiClient = new GoogleGenAI({ apiKey: key });
+  }
+  return aiClient;
+}
 
 async function startServer() {
   const app = express();
@@ -25,6 +36,7 @@ async function startServer() {
         parts: [{ text: m.content }]
       }));
       
+      const ai = getAiClient();
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: geminiMessages,
@@ -36,7 +48,14 @@ async function startServer() {
       res.json({ text: response.text });
     } catch (error: any) {
       console.error("Gemini API Error:", error);
-      res.status(500).json({ error: error.message || "Failed to generate response" });
+      let errorMessage = error.message || "Failed to generate response";
+      
+      // Handle AI Studio managed key safety blocks
+      if (errorMessage.includes("Suspicious activity detected") || errorMessage.includes("gen-lang-client")) {
+        errorMessage = "The managed AI Studio key was blocked. To continue using the AI assistant in your deployed app, please generate your own Gemini API Key and add it to the application settings.";
+      }
+      
+      res.status(500).json({ error: errorMessage });
     }
   });
 

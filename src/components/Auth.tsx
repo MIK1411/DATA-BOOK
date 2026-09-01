@@ -1,4 +1,4 @@
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, browserPopupRedirectResolver } from "firebase/auth";
 import { useState } from "react";
 import { app } from "../lib/firebase";
 import { LogIn, Loader2 } from "lucide-react";
@@ -6,16 +6,19 @@ import { cn } from "../lib/utils";
 
 export default function Auth({ onAuthenticated }: { onAuthenticated: () => void }) {
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleJoin = async () => {
     setLoading(true);
+    setErrorMsg(null);
     try {
       const auth = getAuth(app);
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider, browserPopupRedirectResolver);
       onAuthenticated();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Authentication failed", error);
+      setErrorMsg(error.message || "Authentication failed. Please try again or open the app in a new tab.");
     } finally {
       setLoading(false);
     }
@@ -26,7 +29,7 @@ export default function Auth({ onAuthenticated }: { onAuthenticated: () => void 
       <div className="max-w-md w-full space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out">
         <div className="space-y-4 text-center">
           <h1 className="font-serif text-4xl md:text-5xl tracking-tight text-[#EBEBEB]">
-            India Census <span className="italic text-[#A68B5C] ml-2">Digitalis</span>
+            INDIA DATA<span className="italic text-[#A68B5C] ml-2">BOOK</span>
           </h1>
           <p className="text-[#666666] text-[11px] uppercase tracking-[0.2em] font-semibold">
             National Demographic Portal
@@ -40,6 +43,12 @@ export default function Auth({ onAuthenticated }: { onAuthenticated: () => void 
             </h2>
             <p className="text-xs text-[#888888]">Sign in securely with your Google account to access the real-time workspace.</p>
           </div>
+
+          {errorMsg && (
+            <div className="text-red-400 text-xs text-center border border-red-900/50 bg-red-900/10 p-3 mb-4 rounded">
+              {errorMsg}
+            </div>
+          )}
 
           <button
             onClick={handleJoin}
