@@ -1,0 +1,6 @@
+{
+  "name": "INDIA DATA BOOK",
+  "description": "A luxury, real-time collaborative dashboard exploring the 2011 India Census data.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

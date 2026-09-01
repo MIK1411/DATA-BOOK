@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Anyone signed in can read presence, but only write their own
+    match /presence/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Anyone signed in can read and write to the shared workspace
+    match /workspace/shared {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Enumerations submissions
+    match /enumerations/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.uid || request.auth.uid == request.resource.data.uid;
+      allow create: if request.auth != null;
+    }
+
+    // Survey submissions
+    match /surveys/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.uid || request.auth.uid == request.resource.data.uid;
+      allow create: if request.auth != null;
+    }
+  }
+}
